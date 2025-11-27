@@ -12,21 +12,59 @@ export default function Mixer() {
   
   const router = useRouter()
 
-  const fileToBase64 = (file: File): Promise<string> => {
+  // --- NEW: COMPRESSION FUNCTION ---
+  // This takes a huge iPhone photo and shrinks it to ~500kb
+  const compressImage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = error => reject(error)
+      const img = new Image()
+      img.src = URL.createObjectURL(file)
+      
+      img.onload = () => {
+        // Create a virtual canvas to draw the resized image
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        
+        // Calculate new size (Max 1024px)
+        const MAX_SIZE = 1024
+        let width = img.width
+        let height = img.height
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width
+            width = MAX_SIZE
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height
+            height = MAX_SIZE
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+
+        // Draw and compress to JPEG (0.7 quality)
+        ctx?.drawImage(img, 0, 0, width, height)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7)
+        resolve(dataUrl)
+      }
+      
+      img.onerror = (err) => reject(err)
     })
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'person' | 'style') => {
     const file = e.target.files?.[0]
     if (file) {
-      const base64 = await fileToBase64(file)
-      if (type === 'person') setPersonImage(base64)
-      else setStyleImage(base64)
+      try {
+        // Use the new compressor instead of raw file
+        const compressedBase64 = await compressImage(file)
+        if (type === 'person') setPersonImage(compressedBase64)
+        else setStyleImage(compressedBase64)
+      } catch (e) {
+        alert("Error reading image. Please try a different one.")
+      }
     }
   }
 
@@ -44,7 +82,6 @@ export default function Mixer() {
 
         const data = await response.json()
         
-        // 1. Check for Specific Errors (Like 402 Payment Required)
         if (!response.ok) {
             if (response.status === 402) {
                 throw new Error("No credits left")
@@ -52,14 +89,10 @@ export default function Mixer() {
             throw new Error(data.error || "Generation failed")
         }
 
-        // 2. Success!
         setGeneratedImage(data.imageUrl)
-        
-        // 3. Refresh the page to update Credits and History
         router.refresh()
 
     } catch (e: any) {
-        // Handle the specific credit error nicely
         if (e.message === "No credits left") {
             alert("⚠️ You have run out of free credits! Please Upgrade to VIP to continue.")
         } else {
@@ -74,6 +107,7 @@ export default function Mixer() {
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Person Input */}
         <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
           <h2 className="text-xl font-bold mb-4">1. Upload Person</h2>
           <div className="relative border-2 border-dashed border-gray-600 rounded-lg h-64 flex items-center justify-center bg-gray-900/50 overflow-hidden group hover:border-blue-500 transition">
@@ -86,6 +120,7 @@ export default function Mixer() {
           </div>
         </div>
 
+        {/* Style Input */}
         <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
           <h2 className="text-xl font-bold mb-4">2. Upload Style/Cloth</h2>
           <div className="relative border-2 border-dashed border-gray-600 rounded-lg h-64 flex items-center justify-center bg-gray-900/50 overflow-hidden group hover:border-purple-500 transition">
