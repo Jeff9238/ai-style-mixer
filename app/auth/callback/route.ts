@@ -7,15 +7,20 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/dashboard'
 
   if (code) {
-    // 1. We added 'await' here
     const supabase = await createClient()
-    
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
       return NextResponse.redirect(`${origin}${next}`)
+    } else {
+      // --- DEBUG MODE: PRINT THE ERROR ---
+      return NextResponse.json({ 
+        message: "Login Failed", 
+        error_details: error.message,
+        error_code: error.code 
+      })
     }
   }
 
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+  return NextResponse.json({ message: "No code found in URL" })
 }
