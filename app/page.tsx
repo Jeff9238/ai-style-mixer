@@ -2,11 +2,11 @@
 
 import { createBrowserClient } from '@supabase/ssr'
 import { useState } from 'react'
+import { ArrowRight, Sparkles, Play } from 'lucide-react'
 
 export default function Home() {
   const [loading, setLoading] = useState(false)
 
-  // Connect to Supabase using your secret keys
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -14,51 +14,84 @@ export default function Home() {
 
   const handleLogin = async () => {
     setLoading(true)
-    // This sends the user to Google to sign in
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${location.origin}/auth/callback`,
-      },
+      options: { redirectTo: `${location.origin}/auth/callback` },
     })
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-900 text-white p-4">
-      <div className="max-w-md w-full text-center space-y-8">
-        
-        {/* Title Section */}
-        <div>
-          <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-            StyleMixer AI
-          </h1>
-          <p className="mt-2 text-gray-400">
-            Upload a photo. Choose a style. Let AI reimagine it.
-          </p>
+    <div className="relative min-h-screen bg-black text-white selection:bg-purple-500 selection:text-white overflow-hidden">
+      
+      {/* 1. CINEMATIC BACKGROUND */}
+      <div className="absolute inset-0 z-0">
+        {/* We use a high-quality Unsplash image as the 'Video' background substitute */}
+        <img 
+            src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop" 
+            className="w-full h-full object-cover opacity-60"
+            alt="Background"
+        />
+        {/* Gradient Overlay to make text readable */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+      </div>
+
+      {/* 2. NAVBAR */}
+      <nav className="relative z-10 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-black" />
+            </div>
+            <span className="text-xl font-bold tracking-tight">StyleMixer</span>
+        </div>
+        <button 
+            onClick={handleLogin}
+            className="text-sm font-medium hover:text-gray-300 transition"
+        >
+            Log In
+        </button>
+      </nav>
+
+      {/* 3. HERO CONTENT */}
+      <main className="relative z-10 flex flex-col items-center justify-center min-h-[80vh] px-4 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            <span className="text-xs font-medium tracking-wide uppercase text-gray-300">AI Engine V2.0 Live</span>
         </div>
 
-        {/* Login Button */}
+        <h1 className="text-6xl md:text-8xl font-extrabold tracking-tighter mb-6">
+          Reimagine <br/>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
+            Reality.
+          </span>
+        </h1>
+
+        <p className="max-w-xl text-lg md:text-xl text-gray-400 mb-10 leading-relaxed">
+          The professional AI tool for blending human portraits with infinite style possibilities. Used by creators, designers, and visionaries.
+        </p>
+
         <button
           onClick={handleLogin}
           disabled={loading}
-          className="w-full group relative flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-gray-900 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+          className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:scale-105 transition-all duration-200"
         >
-          {loading ? (
-             "Connecting to Google..."
-          ) : (
-            <span className="flex items-center gap-2">
-              <svg className="h-5 w-5" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-              </svg>
-              Sign in with Google
-            </span>
-          )}
+          {loading ? "Connecting..." : "Start Creating Free"}
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
         </button>
 
-      </div>
+        {/* Social Proof / Footer visual */}
+        <div className="mt-20 flex flex-col items-center gap-4">
+            <p className="text-xs text-gray-500 uppercase tracking-widest">Trusted by creators form</p>
+            <div className="flex gap-8 opacity-50 grayscale">
+               {/* Fake Logos for 'Professional' vibe */}
+               <span className="font-bold text-xl">VOGUE</span>
+               <span className="font-bold text-xl">WIRED</span>
+               <span className="font-bold text-xl">THE VERGE</span>
+            </div>
+        </div>
+      </main>
     </div>
   )
 }
