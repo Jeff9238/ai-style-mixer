@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Image as ImageIcon, Trash2, Download, ExternalLink } from 'lucide-react'
+import { Image as ImageIcon, Trash2, Download } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export default function Gallery({ initialHistory }: { initialHistory: any[] }) {
@@ -9,50 +9,48 @@ export default function Gallery({ initialHistory }: { initialHistory: any[] }) {
   const router = useRouter()
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this masterpiece?")) return
-
-    // 1. Optimistic Update (Remove from screen immediately)
+    if (!confirm("Delete this image?")) return
     setHistory(history.filter(item => item.id !== id))
-
-    // 2. Delete from Backend
-    await fetch('/api/delete', {
-        method: 'POST',
-        body: JSON.stringify({ id }),
-    })
-    
-    // 3. Refresh server data
+    await fetch('/api/delete', { method: 'POST', body: JSON.stringify({ id }) })
     router.refresh()
   }
 
   return (
-    <section id="history" className="scroll-mt-10">
+    <section id="history" className="scroll-mt-20">
         <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-purple-500" /> Recent Creations
             </h2>
-            <span className="text-sm text-gray-500">{history.length} items</span>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {history?.map((item) => (
-                <div key={item.id} className="group relative aspect-[3/4] rounded-xl overflow-hidden bg-gray-900 border border-white/5 hover:border-purple-500/50 transition duration-300">
-                    <img src={item.image_url} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <div key={item.id} className="bg-gray-900 border border-white/10 rounded-xl overflow-hidden shadow-lg">
                     
-                    {/* Hover Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-4">
-                        <p className="text-xs text-gray-300 line-clamp-2 mb-3">{item.prompt}</p>
+                    {/* IMAGE AREA */}
+                    <div className="relative aspect-[3/4] bg-black">
+                        <img src={item.image_url} className="w-full h-full object-cover" />
+                    </div>
+
+                    {/* ACTION BAR (Always visible below image) */}
+                    <div className="p-3 bg-gray-900 border-t border-white/5">
+                        <p className="text-xs text-gray-400 line-clamp-1 mb-3">{item.prompt}</p>
                         
                         <div className="flex gap-2">
-                            {/* Download Button */}
-                            <a href={item.image_url} target="_blank" download className="flex-1 flex items-center justify-center py-2 bg-white/10 backdrop-blur-md text-white text-xs font-bold rounded-lg hover:bg-white/20 transition">
-                                <Download size={14} />
+                            <a 
+                                href={item.image_url} 
+                                target="_blank" 
+                                download 
+                                className="flex-1 flex items-center justify-center py-2 bg-white/5 text-white text-xs font-bold rounded-lg hover:bg-white/10 border border-white/10 transition"
+                            >
+                                <Download size={14} className="mr-2"/> Download
                             </a>
-                            {/* Delete Button */}
+                            
                             <button 
                                 onClick={() => handleDelete(item.id)}
-                                className="flex items-center justify-center px-3 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition"
+                                className="px-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition"
                             >
-                                <Trash2 size={14} />
+                                <Trash2 size={16} />
                             </button>
                         </div>
                     </div>
@@ -60,8 +58,8 @@ export default function Gallery({ initialHistory }: { initialHistory: any[] }) {
             ))}
 
             {(!history || history.length === 0) && (
-                <div className="col-span-full py-20 text-center border-2 border-dashed border-white/10 rounded-xl">
-                    <p className="text-gray-500">No masterpieces yet.</p>
+                <div className="col-span-full py-10 text-center border border-dashed border-white/10 rounded-xl">
+                    <p className="text-gray-500">No images yet.</p>
                 </div>
             )}
         </div>

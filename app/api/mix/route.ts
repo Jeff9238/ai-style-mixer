@@ -31,11 +31,15 @@ export async function POST(req: Request) {
     let instructions = "Analyze these two images. Create a visual prompt for an image generator. The subject is the person from image 1. The outfit is from image 2. Output ONLY the raw visual description in less than 40 words. Comma separated keywords."
     
     if (isCinematic) {
-        instructions += " Make it look like a high-budget Netflix movie scene. Use dramatic lighting, 8k resolution, depth of field, color graded, photorealistic."
+        instructions += " Style: Cinematic 8k masterpiece, dramatic lighting, photorealistic."
     }
     
     if (isExactFace) {
-        instructions += " CRITICAL: Describe the facial features from image 1 in extreme detail (eye shape/color, nose shape, jawline, age, ethnicity) to ensure the identity looks exactly the same."
+        // UPDATED PROMPT FOR FULL BODY:
+        instructions += " CRITICAL: Generate a FULL BODY wide shot. Do not crop the head or feet. The face must match image 1 exactly, but keep the camera zoomed out to show the entire outfit and shoes."
+    } else {
+        // Default behavior also encourages full body
+        instructions += " Ensure the full outfit is visible from head to toe."
     }
 
     const result = await model.generateContent([instructions, personPart, stylePart])
